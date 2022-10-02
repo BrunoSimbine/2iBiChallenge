@@ -1,0 +1,176 @@
+@page "/Detail/{commonname}"
+@page "/Detail"
+@using ClientApp.Models
+@using System.Xml.Serialization
+@using System.Xml
+@inject HttpClient Http
+
+
+@if (Countries == null)
+{
+    <div class="spinner-border back" role="status">
+        <span class="sr-only"></span>
+    </div>
+    <style>
+    .content {
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+</style>
+}
+else
+{
+    
+    <nav class="navbar navbar-expand-lg p-2">
+        <div class="container-fluid">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
+                <a class="navbar-brand">Details</a>
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+                </ul>
+                <form class="d-flex" role="search">
+                    <button class="btn btn-outline-success m-1" type="submit">Export XLS</button>
+                    <button class="btn btn-outline-success m-1" type="submit">Export CSV</button>
+                    <button class="btn btn-outline-success m-1" type="submit">Export XML</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+
+    <div class="m-2">
+    <div class="row">
+        <div class="col-12 mb-5">
+            <table class="table">
+              <thead>
+                <tr>
+                    <th scope="col">Region</th>
+                    <th scope="col">Subregion</th>
+                    <th scope="col">Population</th>
+                    <th scope="col">Area</th>
+                    <th scope="col">Flag</th>
+                </tr>
+              </thead>
+              <tbody>
+              <tr>
+                  <td>@Region</td>
+                  <td>@Subregion</td>
+                  <td>@Population</td>
+                  <td>@Area</td>
+                  <td><i class="bi bi-eye">
+                      <img alt="Bandeira" height="25px" src="@Flag"/></i></td>
+              </tr>
+
+              </tbody>
+            </table>
+        </div>
+
+        <div class="col-4">
+            <h3 class="fw-bold">Names</h3>
+
+            <ol class="list-group list-group-numbered">
+                <li class="list-group-item d-flex justify-content-between list-group-item-action align-items-start">
+                    <div class="ms-2 me-auto">
+                        <div class="fw-bold">Common</div>
+                        @CommonName
+                    </div>
+                </li>
+                <li class="list-group-item d-flex justify-content-between list-group-item-action align-items-start">
+                    <div class="ms-2 me-auto">
+                        <div class="fw-bold">Native</div>
+                        @NativeName
+                    </div>
+                </li>
+            </ol>
+
+        </div>
+
+        <div class="col-4">
+            <h3 class="fw-bold">Capitals</h3>
+            <div class="list-group">
+
+                @foreach (var capital in Capitals!)
+                {
+                    <a class="list-group-item list-group-item-action">@capital</a>
+                }
+            </div>
+        </div>
+
+        <div class="col-4">
+            <h3 class="fw-bold">Timezones</h3>
+            <div class="list-group">
+
+                @foreach (var timezone in Timezones!)
+                {
+                    <a class="list-group-item list-group-item-action">@timezone</a>
+                }
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public string? CommonName { get; set; }
+    private string? NativeName { get; set; }
+    private List<string>? Capitals { get; set; } = new List<string>();
+    private Country? _country;
+    private List<string>? Timezones { get; set; } = new List<string>();
+    private List<Country>? Countries { get; set; }
+
+    private string? Region { get; set; }
+    private string? Subregion { get; set; }
+    private int? Population { get; set; } = 0;
+    private double? Area { get; set; } = 0;
+    public string? Flag { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var countries = await Http.GetFromJsonAsync<Country[]>("sample-data/countries.json");
+        if (countries != null) Countries = countries.ToList();
+
+        _country = Countries?.Find(x => x?.Name?.Common == CommonName);
+        NativeName = Helper.GetName(_country);
+        Capitals = _country?.Capital;
+        Timezones = _country?.Timezones;
+        Region = _country?.Region;
+        Subregion = _country?.Subregion;
+        Population = _country?.Population;
+        Area = _country?.Area;
+        Flag = _country?.Flags?.Png;
+        
+        Console.WriteLine(getXml());
+    }
+    
+    string getXml()
+    {
+        XmlSerializer xsSubmit = new XmlSerializer(typeof(Country));
+        var subReq = _country;
+        var xml = "";
+
+        using(var sww = new StringWriter())
+        {
+            using(XmlWriter writer = XmlWriter.Create(sww))
+            {
+                xsSubmit.Serialize(writer, subReq);
+                xml = sww.ToString(); // Your XML
+            }
+        }
+
+        return xml;
+    }
+    
+}
+
+
+
+
+    
+}

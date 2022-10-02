@@ -1,0 +1,116 @@
+@page "/Dashboard"
+@using ClientApp.Models
+@inject ICountryService CountryService
+@inject IXLSService XlsService
+@inject IDownloadService DownloadService
+@using ClientApp.Services
+
+<PageTitle>Dashboard</PageTitle>
+
+
+@if (_countries == null)
+{
+
+    <div class="spinner-border back" role="status">
+        <span class="sr-only"></span>
+    </div>
+    <style>
+    .content {
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+</style>
+    
+}
+else
+{
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css"
+    />
+    <EditForm Model="_search">
+            <nav class="navbar navbar-expand-lg mb-2">
+                <div class="container-fluid">
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
+                        <a class="navbar-brand" href="#">Lista dos paises</a>
+                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        </ul>
+                        <InputText @onchange="((_) => OnSearchChange())"  @bind-Value="_search.Content" class="form-control" type="search" placeholder="Pesquisar..." aria-label="Search" />
+                            <Button @onclick="OnSearchChange" class="btn btn-outline-success m-1" >Pesquisar</Button>
+                    </div>
+                </div>
+            </nav>
+    </EditForm>
+
+    <!-- Bootstrap icons -->
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Capital</th>
+            <th>Region</th>
+            <th>Subregion</th>
+            <th>Population</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var country in _countries)
+        {
+            @if (country.Capital != null)
+            {
+                _baseUrl = "detail/" + country.Name?.Common;
+            }
+            
+            <tr>
+                <td>@country.Name?.Common</td>
+                <td>@country.Capital?[0];</td>
+                <td>@country.Region</td>
+                <td>@country.Subregion</td>
+                <td>@country.Population</td>
+                <td>
+                    <NavLink href="@_baseUrl">
+                        <button type="button" class="btn btn-success">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </NavLink>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+
+@code {
+    private Search _search = new Search();
+    private Country[]? _countries;
+    private string? _baseUrl;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _countries = await CountryService.GetCountries();
+    }
+
+    async Task OnSearchChange()
+    {
+        if (_search.Content != null) _countries = await CountryService.SearchCountriesByName(_search.Content);
+        try
+        {
+            if (_countries != null) await DownloadService.DownloadDocumet(XlsService.getDocumentFrom(_countries));
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+    
+    
+}
+
