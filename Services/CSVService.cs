@@ -29,7 +29,7 @@ public class CSVService : ICSVService
     {
         return new Document()
         {
-            Name = "countries",
+            Name = "country",
             ContentType = "text/csv",
             Data = getAllBytesFrom(country),
             Extention = "csv"
@@ -41,7 +41,7 @@ public class CSVService : ICSVService
         return new Document()
         {
             Name = "countries",
-            ContentType = "text/csv",
+            ContentType = "application/CSV",
             Data = getAllBytesFrom(countries),
             Extention = "csv"
         };

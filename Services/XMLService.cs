@@ -31,8 +31,8 @@ public class XMLService : IXMLService
     {
         return new Document()
         {
-            Name = "countries",
-            ContentType = "text/xml",
+            Name = "country",
+            ContentType = "application/xml",
             Data = getAllBytesFrom(country),
             Extention = "xml"
         };

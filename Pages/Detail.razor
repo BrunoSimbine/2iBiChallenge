@@ -1,12 +1,15 @@
 @page "/Detail/{commonname}"
 @page "/Detail"
 @using ClientApp.Models
-@using System.Xml.Serialization
-@using System.Xml
-@inject HttpClient Http
+@using ClientApp.Services
+@inject ICountryService CountryService
+@inject IDownloadService DownloadService
+@inject IXMLService XmlService
+@inject IXLSService XlsService
+@inject ICSVService CsvService
 
 
-@if (Countries == null)
+@if (_country == null)
 {
     <div class="spinner-border back" role="status">
         <span class="sr-only"></span>
@@ -33,11 +36,11 @@ else
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
 
                 </ul>
-                <form class="d-flex" role="search">
-                    <button class="btn btn-outline-success m-1" type="submit">Export XLS</button>
-                    <button class="btn btn-outline-success m-1" type="submit">Export CSV</button>
-                    <button class="btn btn-outline-success m-1" type="submit">Export XML</button>
-                </form>
+                <div class="d-flex">
+                    <button @onclick="OnXLS" class="btn btn-outline-success m-1" >Export XLS</button>
+                    <button @onclick="OnCSV" class="btn btn-outline-success m-1">Export CSV</button>
+                    <button @onclick="OnXML" class="btn btn-outline-success m-1">Export XML</button>
+                </div>
             </div>
         </div>
     </nav>
@@ -123,20 +126,20 @@ else
     private List<string>? Capitals { get; set; } = new List<string>();
     private Country? _country;
     private List<string>? Timezones { get; set; } = new List<string>();
-    private List<Country>? Countries { get; set; }
-
     private string? Region { get; set; }
     private string? Subregion { get; set; }
     private int? Population { get; set; } = 0;
     private double? Area { get; set; } = 0;
-    public string? Flag { get; set; }
+    private string? Flag { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        var countries = await Http.GetFromJsonAsync<Country[]>("sample-data/countries.json");
-        if (countries != null) Countries = countries.ToList();
+        if (CommonName != null)
+        {
+            var countries = await CountryService.GetCountry(CommonName);
 
-        _country = Countries?.Find(x => x?.Name?.Common == CommonName);
+            _country = countries;
+        }
         NativeName = Helper.GetName(_country);
         Capitals = _country?.Capital;
         Timezones = _country?.Timezones;
@@ -145,28 +148,22 @@ else
         Population = _country?.Population;
         Area = _country?.Area;
         Flag = _country?.Flags?.Png;
-        
-        Console.WriteLine(getXml());
     }
-    
-    string getXml()
+
+    async Task OnXML()
     {
-        XmlSerializer xsSubmit = new XmlSerializer(typeof(Country));
-        var subReq = _country;
-        var xml = "";
-
-        using(var sww = new StringWriter())
-        {
-            using(XmlWriter writer = XmlWriter.Create(sww))
-            {
-                xsSubmit.Serialize(writer, subReq);
-                xml = sww.ToString(); // Your XML
-            }
-        }
-
-        return xml;
+        if (_country != null) await DownloadService.DownloadDocumet(XmlService.getDocumentFrom(_country));
     }
     
+    async Task OnCSV()
+    {
+        if (_country != null) await DownloadService.DownloadDocumet(CsvService.getDocumentFrom(_country));
+    }
+    
+    async Task OnXLS()
+    {
+        if (_country != null) await DownloadService.DownloadDocumet(XlsService.getDocumentFrom(_country));
+    }
 }
 
 
