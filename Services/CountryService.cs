@@ -25,7 +25,7 @@ public class CountryService : ICountryService
     public async Task<Country[]?> SearchCountriesByName(string? name)
     {
         var countries = await GetCountries();
-        return name == null ? countries : countries?.ToList().FindAll(x => x.Name?.Common != null && x.Name != null && x.Name.Common.Contains(name)).ToArray();
+        return name == null ? countries : countries?.ToList().FindAll(x => x.Name?.Common != null && x.Name != null && x.Name.Common.ToUpper().Contains(name.ToUpper())).ToArray();
     }
 
     public async Task<Country?> GetCountry(string Name)

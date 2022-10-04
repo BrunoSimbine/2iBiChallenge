@@ -1,26 +1,17 @@
-# Use Microsoft's official build .NET image.
-# https://hub.docker.com/_/microsoft-dotnet
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+# syntax=docker/dockerfile:1
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build-env
 WORKDIR /app
 
-# Install production dependencies.
-# Copy csproj and restore as distinct layers.
+# Copy csproj and restore as distinct layers
 COPY *.csproj ./
 RUN dotnet restore
 
-# Copy local code to the container image.
+# Copy everything else and build
 COPY . ./
-WORKDIR /app
-
-# Build a release artifact.
 RUN dotnet publish -c Release -o out
 
-
-# Use Microsoft's official runtime .NET image.
-# https://hub.docker.com/_/microsoft-dotnet
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS runtime
+# Build runtime image
+FROM mcr.microsoft.com/dotnet/aspnet:6.0
 WORKDIR /app
-COPY --from=build /app/out ./
-
-# Run the web service on container startup.
+COPY --from=build-env /app/out .
 ENTRYPOINT ["dotnet", "ClientApp.dll"]
