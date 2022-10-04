@@ -2,6 +2,9 @@
 
 Resolucao do desafio do desafio da 2iBi de criar um client para consumir a API https://restcountries.com
 
+## Video ilustrativo
+Acessar em: https://youtu.be/mOrnZs9emiE
+
 ## Pré-requisitos
 
 Este projeto requer .NET 6 LTS. O .NET é realmente fácil de instalar. Para garantir que você o tenha disponíveis em sua máquina, tente executar o seguinte comando.
