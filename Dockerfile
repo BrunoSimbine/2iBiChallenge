@@ -1,17 +1,9 @@
-# syntax=docker/dockerfile:1
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build-env
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /app
+COPY ./ .
+ 
+RUN dotnet publish -c Release -o output
 
-# Copy csproj and restore as distinct layers
-COPY *.csproj ./
-RUN dotnet restore
-
-# Copy everything else and build
-COPY . ./
-RUN dotnet publish -c Release -o out
-
-# Build runtime image
-FROM mcr.microsoft.com/dotnet/aspnet:6.0
-WORKDIR /app
-COPY --from=build-env /app/out .
-ENTRYPOINT ["dotnet", "ClientApp.dll"]
+FROM nginx:alpine 
+WORKDIR /usr/share/nginx/html
+COPY --from=build /app/output/wwwroot .
