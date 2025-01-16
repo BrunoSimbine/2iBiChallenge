@@ -17,7 +17,7 @@ public class CountryService : ICountryService
     
     public async Task<Country[]?> GetCountries()
     {
-        var request = await _httpClient.GetAsync(new Uri("https://restcountries.com/v3.1/all"));
+        var request = await _httpClient.GetAsync(new Uri("https://restcountries.com/v3/all"));
         var data = await request.Content.ReadAsStringAsync();
         return JsonConvert.DeserializeObject<Country[]>(data);
     }
