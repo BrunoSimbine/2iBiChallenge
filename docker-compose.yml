@@ -1,0 +1,14 @@
+services:
+  2ibi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5005:80"
+    networks:
+      - 2ibi_network
+
+networks:
+  2ibi_network:
+    driver: bridge
+      
